@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Загрузка файлов на Яндекс Диск{% endblock %}
+
+{% block content %}
+<section class="container my-5 px-4">
+  <h1 class="text-center">Загрузка файлов на Яндекс Диск</h1>
+  <p class="text-center my-4">
+    Выберите файлы для загрузки. Для каждого файла будет сгенерирована короткая ссылка.
+  </p>
+
+  <div class="container">
+    <div class="row my-3">
+      <div class="col-sm"></div>
+      <div class="col-sm">
+        <form method="POST" novalidate enctype="multipart/form-data">
+          {{ form.csrf_token }}
+          <div>
+            {{ form.files(class="form-control form-control-lg py-2 mb-3") }}
+            {% if form.files.errors %}
+              <p><span style="color:red">
+                {% for error in form.files.errors %}{{ error }}{% endfor %}
+              </span></p>
+            {% endif %}
+          </div>
+          {{ form.submit(class="btn btn-primary") }}
+        </form>
+      </div>
+      <div class="col-sm"></div>
+    </div>
+  </div>
+
+  {% if results %}
+  <div class="container mt-5">
+    <h5 class="text-center">Ссылки на скачивание:</h5>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Имя файла</th>
+          <th>Короткая ссылка</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in results %}
+        <tr>
+          <td>{{ item.filename }}</td>
+          <td><a href="{{ item.short_link }}">{{ item.short_link }}</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}
