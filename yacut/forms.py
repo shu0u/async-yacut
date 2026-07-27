@@ -1,14 +1,13 @@
-import re
-
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileRequired, MultipleFileField
 from wtforms import StringField, SubmitField, URLField
 from wtforms.validators import DataRequired, Length, Optional, ValidationError
 
-from .models import URLMap
-
-SHORT_ID_PATTERN = r'^[A-Za-z0-9]{1,16}$'
-FORBIDDEN_SHORT = 'files'
+from .utils import (
+    MAX_CUSTOM_ID_LENGTH,
+    is_short_id_taken,
+    is_valid_short_id,
+)
 
 
 class URLForm(FlaskForm):
@@ -19,21 +18,17 @@ class URLForm(FlaskForm):
     )
     custom_id = StringField(
         'Ваш вариант короткой ссылки',
-        validators=[Length(max=16), Optional()],
+        validators=[Length(max=MAX_CUSTOM_ID_LENGTH), Optional()],
     )
     submit = SubmitField('Создать')
 
     def validate_custom_id(self, field):
         if field.data:
-            if not re.match(SHORT_ID_PATTERN, field.data):
+            if not is_valid_short_id(field.data):
                 raise ValidationError(
                     'Указано недопустимое имя для короткой ссылки'
                 )
-            if field.data == FORBIDDEN_SHORT:
-                raise ValidationError(
-                    'Предложенный вариант короткой ссылки уже существует.'
-                )
-            if URLMap.query.filter_by(short=field.data).first() is not None:
+            if is_short_id_taken(field.data):
                 raise ValidationError(
                     'Предложенный вариант короткой ссылки уже существует.'
                 )
